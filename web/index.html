@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="FireMind AI - Your intelligent document assistant" />
+  <title>FireMind AI</title>
+
+  <link rel="icon" type="image/svg+xml" href="firemind.svg" />
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+  <div class="app">
+
+    <aside class="sidebar" aria-label="Sidebar Navigation">
+      <header class="logo">
+        <img src="firemind.svg" alt="FireMind Logo" class="logo-icon" />
+        FireMind
+      </header>
+
+      <button class="new-chat" onclick="createNewChat()" aria-label="Start a new chat">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Chat
+      </button>
+
+
+
+      <nav id="chat-history" aria-label="Chat History"></nav>
+
+      <section class="upload-section" aria-label="File Upload">
+        <div id="dropZone" class="drop-zone" role="button" tabindex="0" aria-label="Drag and drop a PDF file here">
+          <p>📂 Upload Data</p>
+          <span class="divider-text">or</span>
+
+          <label class="file-label">
+            Choose PDF
+            <input type="file" id="pdfInput" accept=".pdf,application/pdf" hidden>
+          </label>
+          <div id="fileName" class="file-name" aria-live="polite">No file selected</div>
+        </div>
+
+        <div class="progress-container" id="progressContainer" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+          aria-valuenow="0">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <button class="upload-btn" onclick="uploadPDF()" aria-label="Upload selected PDF">Initialize Link</button>
+      </section>
+    </aside>
+
+    <main class="main">
+      <section class="chat-wrapper" aria-label="Chat interface">
+        <div id="chat-container">
+          <div class="chat-inner" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <footer class="input-wrapper">
+        <form class="input-container" onsubmit="handleSend(event)">
+          <input type="text" id="input" placeholder="Enter command query..." aria-label="Type your message here"
+            autocomplete="off" required />
+          <button type="submit" class="send-btn" aria-label="Send message">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </form>
+      </footer>
+    </main>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+
+</html>
