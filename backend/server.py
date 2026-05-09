@@ -23,10 +23,13 @@ from backend.app_config import BASE_DIR
 
 # ================= CONFIG & LOGGING ================= #
 load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+AI_MODEL = os.getenv("AI_MODEL", "llama3-8b-8192")
 
-client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+client = AsyncOpenAI(
+    base_url="https://api.groq.com/openai/v1",
+    api_key=GROQ_API_KEY
+)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -85,7 +88,7 @@ async def generate_optimized_query(user_message: str, history_text: str) -> str:
 
     try:
         response = await client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model=AI_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.0
         )
@@ -123,8 +126,11 @@ async def chat(query: Query):
         logger.error(f"Retrieval error: {e}")
 
     prompt = f"""Instruct: You are FireMind, the official AI assistant for the Fire Engineering Research Laboratory (FERL) at IIT Gandhinagar. Respond in a highly professional, clear, and structured manner.
-If the user is just saying hello, greet them back and provide your location/contact info using the Context below.
-Answer the user's message directly and naturally based ONLY on the provided Context. 
+If the user is saying hello or greeting you, greet them back warmly and provide your location/contact info using the Context below.
+If the user says "thank you", "thanks", "ok", or "goodbye", respond politely and naturally (e.g., "You're welcome!", "Happy to help!", or "Have a great day!") without re-introducing yourself or dumping the full contact information.
+Answer the user's message directly and naturally based on the provided Context. 
+If the user asks a broad or general question (e.g., "Tell me about NFPA" or "What is NABL?"), explain the broad topic generally using your general knowledge. Do NOT bring up or stick to specific standards, subsets, or single examples from the Context (such as "NFPA 13" or a specific NABL lab) unless the user explicitly mentions them or asks about them in their message. Keep the response broad and relevant to their exact query.
+If the context does not contain the answer at all (e.g., for general questions about IIT Gandhinagar or general topics), you may use your general knowledge to answer helpfully while maintaining your identity as FireMind. 
 CRITICAL RULES:
 - When providing contact information, links, addresses, or pin codes from the Context, quote them EXACTLY as they appear. 
 - Do NOT use placeholders like [Address: 382055] or [Phone number] or [Website URL]. Use the actual data from the Context.
@@ -144,7 +150,7 @@ FireMind:"""
     async def generate_stream() -> AsyncGenerator[str, None]:
         try:
             stream = await client.chat.completions.create(
-                model=OPENAI_MODEL,
+                model=AI_MODEL,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.0,
                 stream=True

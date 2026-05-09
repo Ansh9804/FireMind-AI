@@ -40,7 +40,7 @@ def load_documents():
                 if "documents" in data:
                     docs.extend([d["content"] for d in data["documents"]])
         except Exception as e:
-            print(f"⚠️ Error loading main JSON: {e}")
+            print(f"Error loading main JSON: {e}")
 
     extra_path = os.path.join(DATA_PATH, "extra")
     if os.path.exists(extra_path):
@@ -55,7 +55,7 @@ def load_documents():
                         data = json.load(f)
                         docs.append(json.dumps(data))
             except Exception as e:
-                print(f"⚠️ Error loading extra file {file}: {e}")
+                print(f"Error loading extra file {file}: {e}")
 
     final_docs = []
     for doc in docs:
@@ -67,16 +67,16 @@ def create_embeddings(texts):
 
 def build_index():
     if os.path.exists(CACHE_PATH):
-        print("⚡ Loading cached index...")
+        print("Loading cached index...")
         with open(CACHE_PATH, "rb") as f:
             index, texts = pickle.load(f)
         return index, texts
 
-    print("🔄 Building new FAISS index...")
+    print("Building new FAISS index...")
     texts = load_documents()
     
     if not texts:
-        print("⚠️ No documents found. Returning empty index.")
+        print("No documents found. Returning empty index.")
         dim = model.get_sentence_embedding_dimension()
         return faiss.IndexFlatL2(dim), []
 
@@ -86,7 +86,7 @@ def build_index():
     index.add(embeddings)
 
     save_index(index, texts)
-    print("✅ Index ready!")
+    print("Index ready!")
     return index, texts
 
 def save_index(index, texts):
@@ -94,6 +94,6 @@ def save_index(index, texts):
         os.makedirs(DATA_PATH, exist_ok=True)
         with open(CACHE_PATH, "wb") as f:
             pickle.dump((index, texts), f)
-        print(f"💾 Index successfully saved to {CACHE_PATH} with {len(texts)} chunks.")
+        print(f"Index successfully saved to {CACHE_PATH} with {len(texts)} chunks.")
     except Exception as e:
-        print(f"❌ Failed to save index: {e}")
+        print(f"Failed to save index: {e}")
