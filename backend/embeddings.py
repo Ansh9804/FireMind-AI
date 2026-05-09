@@ -1,17 +1,14 @@
 import os
 import json
-import faiss
 import pickle
-import numpy as np
-import socket
-socket.setdefaulttimeout(120) # Increase timeout for model downloads
-from sentence_transformers import SentenceTransformer
 from backend.app_config import DATA_PATH
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
-CACHE_PATH = os.path.join(DATA_PATH, "faiss_index.pkl")
+CACHE_PATH = os.path.join(DATA_PATH, "texts_cache.pkl")
 
-# 🔥 UPGRADE: Semantic Chunker (Respects paragraphs and sentences)
+class MockIndex:
+    def add(self, embeddings):
+        pass
+
 def semantic_chunk_text(text, max_chunk_size=800):
     paragraphs = text.split('\n\n')
     chunks = []
@@ -62,38 +59,29 @@ def load_documents():
         final_docs.extend(semantic_chunk_text(doc))
     return final_docs
 
-def create_embeddings(texts):
-    return np.array(model.encode(texts)).astype("float32")
-
 def build_index():
     if os.path.exists(CACHE_PATH):
-        print("Loading cached index...")
-        with open(CACHE_PATH, "rb") as f:
-            index, texts = pickle.load(f)
-        return index, texts
+        print("Loading cached documents...")
+        try:
+            with open(CACHE_PATH, "rb") as f:
+                texts = pickle.load(f)
+            return MockIndex(), texts
+        except Exception as e:
+            print(f"Failed to load cache: {e}")
 
-    print("Building new FAISS index...")
+    print("Loading documents...")
     texts = load_documents()
-    
-    if not texts:
-        print("No documents found. Returning empty index.")
-        dim = model.get_sentence_embedding_dimension()
-        return faiss.IndexFlatL2(dim), []
+    print("Documents ready!")
+    return MockIndex(), texts
 
-    embeddings = create_embeddings(texts)
-    dim = embeddings.shape[1]
-    index = faiss.IndexFlatL2(dim)
-    index.add(embeddings)
-
-    save_index(index, texts)
-    print("Index ready!")
-    return index, texts
+def create_embeddings(texts):
+    return None
 
 def save_index(index, texts):
     try:
         os.makedirs(DATA_PATH, exist_ok=True)
         with open(CACHE_PATH, "wb") as f:
-            pickle.dump((index, texts), f)
-        print(f"Index successfully saved to {CACHE_PATH} with {len(texts)} chunks.")
+            pickle.dump(texts, f)
+        print(f"Successfully saved {len(texts)} chunks to cache.")
     except Exception as e:
-        print(f"Failed to save index: {e}")
+        print(f"Failed to save cache: {e}")
